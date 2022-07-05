@@ -188,6 +188,9 @@ class PropertyNode {
             Object[] objectArray = (Object[]) object;
             for (int i = 0; i < objectArray.length; i++) {
                 Object o = objectArray[i];
+                if (o == null) {
+                    continue;
+                }
                 childrenList.add(new PropertyNode(o,
                     path + "[" + i +"]",
                         new String[] {
@@ -207,6 +210,9 @@ class PropertyNode {
             Collection collection = (Collection) object;
             int i = 0;
             for (Object o : collection) {
+                if (o == null) {
+                    continue;
+                }
                 childrenList.add(new PropertyNode(o,
                         path + "[" + i + "]",
                         new String[] {
@@ -225,6 +231,9 @@ class PropertyNode {
             Map map = (Map) object;
             for (Object key : map.keySet()) {
                 Object value = map.get(key);
+                if (value == null) {
+                    continue;
+                }
                 childrenList.add(new PropertyNode(value,
                 path + "[" + String.valueOf(key) +"]",
                 new String[] {
@@ -236,9 +245,9 @@ class PropertyNode {
                         String.valueOf(value),
                     }
                 ));
-                children = childrenList.toArray(new Object[childrenList.size()]);
-                return children;
             }
+            children = childrenList.toArray(new Object[childrenList.size()]);
+            return children;
         }
 
         try {
