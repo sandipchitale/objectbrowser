@@ -16,11 +16,10 @@ import objectbrowser.treetable.TreeTableModel;
 public class InspectorModel extends AbstractTreeTableModel {
 
     // Names of the columns.
-    static protected String[] cNames = { "Name", "Value", "Type", "Modifier", "Declarer", "Orgin" };
+    static protected String[] cNames = { "Name", "Value", "Type", "Modifier", "Actual Type" };
 
     // Types of the columns.
-    static protected Class<?>[] cTypes = { TreeTableModel.class, String.class, String.class, String.class, String.class,
-            String.class };
+    static protected Class<?>[] cTypes = { TreeTableModel.class, String.class, String.class, String.class, String.class};
 
     public InspectorModel(Object objectToInspect) {
         super(InspectorModel.getRootNode(objectToInspect));
@@ -86,9 +85,7 @@ public class InspectorModel extends AbstractTreeTableModel {
                 case 3:
                     return propertyNode.getModifier();
                 case 4:
-                    return propertyNode.getDeclarer();
-                case 5:
-                    return propertyNode.getOrigin();
+                    return propertyNode.getActualType();
             }
         } catch (SecurityException se) {
         }
@@ -112,9 +109,9 @@ class MapNode {
 class PropertyNode {
     private String path;
     private final Inspector inspector;
-    Object[] children;
     private final String[] propertyInfo;
-
+    Object[] children;
+    private String actualType = "";
 
     public PropertyNode(Object objectToInspect) {
         this(objectToInspect, "");
@@ -165,6 +162,10 @@ class PropertyNode {
         return propertyInfo[Inspector.MEMBER_DECLARER_IDX];
     }
 
+    public String getActualType() {
+        return actualType;
+    }
+
     public String getOrigin() {
         return propertyInfo[Inspector.MEMBER_ORIGIN_IDX];
     }
@@ -191,7 +192,7 @@ class PropertyNode {
                 if (o == null) {
                     continue;
                 }
-                childrenList.add(new PropertyNode(o,
+                PropertyNode pn = new PropertyNode(o,
                     path + "[" + i +"]",
                         new String[] {
                             "",
@@ -201,7 +202,9 @@ class PropertyNode {
                             "[" + i + "]",
                             String.valueOf(o),
                         }
-                    ));
+                );
+                pn.actualType = o.getClass().getName();
+                childrenList.add(pn);
 
             }
             children = childrenList.toArray(new Object[childrenList.size()]);
@@ -213,16 +216,18 @@ class PropertyNode {
                 if (o == null) {
                     continue;
                 }
-                childrenList.add(new PropertyNode(o,
-                        path + "[" + i + "]",
-                        new String[] {
-                            "",
-                            "",
-                            "",
-                            (o == null ? "" : o.getClass().getName()),
-                            "[" + i + "]",
-                            String.valueOf(o)
-                        }));
+                PropertyNode pn = new PropertyNode(o,
+                    path + "[" + i + "]",
+                    new String[] {
+                        "",
+                        "",
+                        "",
+                        (o == null ? "" : o.getClass().getName()),
+                        "[" + i + "]",
+                        String.valueOf(o)
+                });
+                    pn.actualType = o.getClass().getName();
+                childrenList.add(pn);
                 i++;
             }
             children = childrenList.toArray(new Object[childrenList.size()]);
@@ -234,17 +239,19 @@ class PropertyNode {
                 if (value == null) {
                     continue;
                 }
-                childrenList.add(new PropertyNode(value,
-                path + "[" + String.valueOf(key) +"]",
-                new String[] {
-                        "",
-                        "",
-                        "",
-                        (value == null ? "" : value.getClass().getName()),
-                        "['" + String.valueOf(key) + "']",
-                        String.valueOf(value),
-                    }
-                ));
+                PropertyNode pn = new PropertyNode(value,
+                    path + "[" + String.valueOf(key) +"]",
+                    new String[] {
+                            "",
+                            "",
+                            "",
+                            (value == null ? "" : value.getClass().getName()),
+                            "['" + String.valueOf(key) + "']",
+                            String.valueOf(value),
+                        }
+                );
+                pn.actualType = value.getClass().getName();
+                childrenList.add(pn);
             }
             children = childrenList.toArray(new Object[childrenList.size()]);
             return children;
@@ -264,7 +271,9 @@ class PropertyNode {
                     } catch (Exception e) {
                     }
                     if (value != null) {
-                        childrenList.add(new PropertyNode(value, "", propertyInfo));
+                        PropertyNode pn = new PropertyNode(value, "", propertyInfo);
+                        pn.actualType = value.getClass().getName();
+                        childrenList.add(pn);
                     }
                 }
                 children = childrenList.toArray(new Object[childrenList.size()]);
